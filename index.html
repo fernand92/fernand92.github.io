@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Gerenciador de Treinos - Musculação</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 30px;
+            background-color: #121212;
+            display: flex;
+            justify-content: center;
+            color: #e0e0e0;
+        }
+
+        .form-section {
+            background-color: #1e1e1e;
+            padding: 30px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 900px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #00e676;
+        }
+
+        h3 {
+            margin-top: 30px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background-color: #2a2a2a;
+            color: #fff;
+        }
+
+        button {
+            background: linear-gradient(135deg, #00e676, #00c853);
+            color: #000;
+            padding: 12px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-right: 10px;
+            margin-top: 5px;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 25px;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid #333;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #2a2a2a;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="form-section">
+
+        <h1>Gerenciador de Treinos de Musculação</h1>
+
+        <input type="hidden" id="indice">
+
+        <label>Nome do Aluno</label>
+        <input type="text" id="aluno">
+
+        <label>Grupo Muscular</label>
+        <select id="grupo">
+            <option>Peito</option>
+            <option>Costas</option>
+            <option>Pernas</option>
+            <option>Ombro</option>
+            <option>Braços</option>
+        </select>
+
+        <label>Exercício Principal</label>
+        <input type="text" id="exercicio">
+
+        <label>Séries</label>
+        <input type="text" id="series">
+
+        <label>Repetições</label>
+        <input type="text" id="repeticoes">
+
+        <label>Objetivo</label>
+        <select id="objetivo">
+            <option>Hipertrofia</option>
+            <option>Força</option>
+            <option>Resistência</option>
+        </select>
+
+        <button onclick="salvarTreino()">Salvar</button>
+        <button onclick="limpar()">Cancelar</button>
+
+        <h3>Importar / Exportar</h3>
+        <input type="file" id="arquivoInput" accept=".csv">
+        <button onclick="importarCSV()">Importar CSV</button>
+        <button onclick="exportarCSV()">Exportar CSV</button>
+
+        <h3>Lista de Treinos</h3>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Aluno</th>
+                    <th>Grupo</th>
+                    <th>Exercício</th>
+                    <th>Séries</th>
+                    <th>Reps</th>
+                    <th>Objetivo</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="tabela"></tbody>
+        </table>
+
+    </div>
+
+    <script>
+        let treinos = [];
+
+        function salvarTreino() {
+            const aluno = document.getElementById("aluno").value;
+            const grupo = document.getElementById("grupo").value;
+            const exercicio = document.getElementById("exercicio").value;
+            const series = document.getElementById("series").value;
+            const repeticoes = document.getElementById("repeticoes").value;
+            const objetivo = document.getElementById("objetivo").value;
+            const indice = document.getElementById("indice").value;
+
+            if (aluno === "" || exercicio === "") {
+                alert("Preencha os campos obrigatórios!");
+                return;
+            }
+
+            const treino = { aluno, grupo, exercicio, series, repeticoes, objetivo };
+
+            if (indice === "") {
+                treinos.push(treino);
+            } else {
+                treinos[indice] = treino;
+            }
+
+            limpar();
+            renderizar();
+        }
+
+        function renderizar() {
+            const tabela = document.getElementById("tabela");
+            tabela.innerHTML = "";
+
+            treinos.forEach((t, i) => {
+                tabela.innerHTML += `
+                    <tr>
+                        <td>${t.aluno}</td>
+                        <td>${t.grupo}</td>
+                        <td>${t.exercicio}</td>
+                        <td>${t.series}</td>
+                        <td>${t.repeticoes}</td>
+                        <td>${t.objetivo}</td>
+                        <td>
+                            <button onclick="editar(${i})">Editar</button>
+                            <button onclick="excluir(${i})">Excluir</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function editar(i) {
+            document.getElementById("aluno").value = treinos[i].aluno;
+            document.getElementById("grupo").value = treinos[i].grupo;
+            document.getElementById("exercicio").value = treinos[i].exercicio;
+            document.getElementById("series").value = treinos[i].series;
+            document.getElementById("repeticoes").value = treinos[i].repeticoes;
+            document.getElementById("objetivo").value = treinos[i].objetivo;
+            document.getElementById("indice").value = i;
+        }
+
+        function excluir(i) {
+            treinos.splice(i, 1);
+            renderizar();
+        }
+
+        function limpar() {
+            document.querySelectorAll("input").forEach(i => i.value = "");
+            document.getElementById("indice").value = "";
+        }
+
+        function importarCSV() {
+            const file = document.getElementById("arquivoInput").files[0];
+            if (!file) return alert("Selecione um CSV!");
+
+            const reader = new FileReader();
+            reader.onload = e => {
+                const linhas = e.target.result.split("\n");
+                treinos = [];
+
+                for (let i = 1; i < linhas.length; i++) {
+                    const d = linhas[i].split(",");
+                    if (d.length >= 6) {
+                        treinos.push({
+                            aluno: d[0],
+                            grupo: d[1],
+                            exercicio: d[2],
+                            series: d[3],
+                            repeticoes: d[4],
+                            objetivo: d[5]
+                        });
+                    }
+                }
+                renderizar();
+            };
+            reader.readAsText(file);
+        }
+
+        function exportarCSV() {
+            let csv = "Aluno,Grupo,Exercicio,Series,Repeticoes,Objetivo\n";
+            treinos.forEach(t => {
+                csv += `${t.aluno},${t.grupo},${t.exercicio},${t.series},${t.repeticoes},${t.objetivo}\n`;
+            });
+
+            const blob = new Blob([csv], { type: "text/csv" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "treinos.csv";
+            link.click();
+        }
+    </script>
+
+</body>
+
+</html>
